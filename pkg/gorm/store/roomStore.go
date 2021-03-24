@@ -1,15 +1,15 @@
 package store
 
 import (
+	"github.com/jordy2254/indoormaprestapi/pkg/model"
 	"gorm.io/gorm"
-	"github.com/jordy2254/indoormaprestapi/model"
 )
 
 type RoomStore struct {
 	DB *gorm.DB
 }
 
-func NewRoomStore(DB *gorm.DB) RoomStore{
+func NewRoomStore(DB *gorm.DB) RoomStore {
 	return RoomStore{DB: DB}
 }
 

@@ -1,15 +1,15 @@
 package store
 
 import (
+	"github.com/jordy2254/indoormaprestapi/pkg/model"
 	"gorm.io/gorm"
-	"github.com/jordy2254/indoormaprestapi/model"
 )
 
 type IndentStore struct {
 	DB *gorm.DB
 }
 
-func NewIndentStore(DB *gorm.DB) IndentStore{
+func NewIndentStore(DB *gorm.DB) IndentStore {
 	return IndentStore{DB: DB}
 }
 

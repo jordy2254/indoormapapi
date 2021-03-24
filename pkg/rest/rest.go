@@ -2,9 +2,9 @@ package rest
 
 import (
 	"github.com/gorilla/mux"
-	"github.com/jordy2254/indoormaprestapi/interfaces/gorm/store"
-	"github.com/jordy2254/indoormaprestapi/interfaces/rest/handlers"
-	"github.com/jordy2254/indoormaprestapi/interfaces/rest/middleware"
+	"github.com/jordy2254/indoormaprestapi/pkg/gorm/store"
+	"github.com/jordy2254/indoormaprestapi/pkg/rest/handlers"
+	"github.com/jordy2254/indoormaprestapi/pkg/rest/middleware"
 	"gorm.io/gorm"
 	"net/http"
 )

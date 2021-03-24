@@ -1,22 +1,22 @@
 package store
 
 import (
+	"github.com/jordy2254/indoormaprestapi/pkg/model"
 	"gorm.io/gorm"
-	"github.com/jordy2254/indoormaprestapi/model"
 )
 
 type MapStore struct {
 	DB *gorm.DB
 }
 
-func NewMapStore(DB *gorm.DB) MapStore{
+func NewMapStore(DB *gorm.DB) MapStore {
 	return MapStore{DB: DB}
 }
 func (mapStore *MapStore) CreateMap(ma *model.Map){
 	mapStore.DB.Create(ma)
 }
 
-func (mapStore *MapStore) GetMapById(id int) model.Map{
+func (mapStore *MapStore) GetMapById(id int) model.Map {
 	var ma model.Map
 	mapStore.DB.Preload("Nodes").
 		Preload("Edges").
@@ -33,7 +33,7 @@ func (mapStore *MapStore) DeleteMap(id int){
 	mapStore.DB.Delete(&model.Map{}, id)
 }
 
-func (mapStore *MapStore) GetMapsByUserId(id int) []model.Map{
+func (mapStore *MapStore) GetMapsByUserId(id int) []model.Map {
 	var maps []model.Map
 	mapStore.DB.Raw("select maps.* from auth0_users users "+
 		"  join user_map_jt umj on users.id = umj.auth0_user_id "+
@@ -42,7 +42,7 @@ func (mapStore *MapStore) GetMapsByUserId(id int) []model.Map{
 	return maps
 }
 
-func (mapStore *MapStore) GetOAuthUserBySub(sub string) model.Auth0User{
+func (mapStore *MapStore) GetOAuthUserBySub(sub string) model.Auth0User {
 	var auth0User model.Auth0User
 
 	mapStore.DB.Find(&auth0User, "auth0_users.authid=?", sub)

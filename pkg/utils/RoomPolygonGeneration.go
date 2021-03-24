@@ -1,8 +1,8 @@
-package application
+package utils
 
 import (
 	"errors"
-	"github.com/jordy2254/indoormaprestapi/model"
+	"github.com/jordy2254/indoormaprestapi/pkg/model"
 )
 
 type PairPoint2f struct {

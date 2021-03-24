@@ -27,11 +27,11 @@ type Pair2f struct {
 }
 
 type MapNode struct {
-	Id       int     `json:"id" gorm:"primaryKey"`
-	MapId    int     `json:"mapId"`
-	Location Point2f `json:"location" gorm:"embedded;embeddedPrefix:location_"`
-	RootNode bool    `json:"rootNode"`
-	FloorIndex *int `json:"floorIndex"`
+	Id         int     `json:"id" gorm:"primaryKey"`
+	MapId      int     `json:"mapId"`
+	Location   Point2f `json:"location" gorm:"embedded;embeddedPrefix:location_"`
+	RootNode   bool    `json:"rootNode"`
+	FloorIndex *int    `json:"floorIndex"`
 }
 
 type NodeEdge struct {
@@ -71,7 +71,7 @@ type Building struct {
 type Floor struct {
 	Id          int      `json:"id" gorm:"primaryKey"`
 	BuildingId  int      `json:"buildingId"`
-	FloorNumber *int      `json:"floorNumber"`
+	FloorNumber *int     `json:"floorNumber"`
 	FloorName   string   `json:"floorName"`
 	MapId       int      `json:"mapId"`
 	Location    Point2f  `json:"location" gorm:"embedded;embeddedPrefix:location_"`
@@ -106,7 +106,7 @@ type Room struct {
 	FloorId    int      `json:"floorId" gorm:"column:floorId"`
 	MapId      int      `json:"mapId"`
 	BuildingId int      `json:"buildingId"`
-	Rotation   *float64  `json:"rotation"`
+	Rotation   *float64 `json:"rotation"`
 	Name       string   `json:"name"`
 	Location   Point2f  `json:"location" gorm:"embedded;embeddedPrefix:location_"`
 	Dimensions Point2f  `json:"dimensions" gorm:"embedded;embeddedPrefix:size_"`

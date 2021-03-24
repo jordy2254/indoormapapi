@@ -1,9 +1,9 @@
 package main
 
 import (
-	"github.com/jordy2254/indoormaprestapi/interfaces/gorm"
-	"github.com/jordy2254/indoormaprestapi/interfaces/rest"
-	"github.com/jordy2254/indoormaprestapi/interfaces/rest/wrappers"
+	"github.com/jordy2254/indoormaprestapi/pkg/gorm"
+	"github.com/jordy2254/indoormaprestapi/pkg/rest"
+	"github.com/jordy2254/indoormaprestapi/pkg/rest/wrappers"
 	"net/http"
 )
 

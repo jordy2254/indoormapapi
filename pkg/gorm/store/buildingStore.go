@@ -1,19 +1,19 @@
 package store
 
 import (
+	"github.com/jordy2254/indoormaprestapi/pkg/model"
 	"gorm.io/gorm"
-	"github.com/jordy2254/indoormaprestapi/model"
 )
 
 type BuildingStore struct {
 	DB *gorm.DB
 }
 
-func NewBuildingStore(DB *gorm.DB) BuildingStore{
+func NewBuildingStore(DB *gorm.DB) BuildingStore {
 	return BuildingStore{DB: DB}
 }
 
-func (bs BuildingStore) GetBuildingById(mapId, id int) model.Building{
+func (bs BuildingStore) GetBuildingById(mapId, id int) model.Building {
 	var building model.Building
 	bs.DB.Preload("Floors").
 		Preload("Floors.Sensors").
