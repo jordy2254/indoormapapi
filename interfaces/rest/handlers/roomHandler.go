@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/gorilla/mux"
+	"github.com/jordy2254/indoormaprestapi/interfaces/application"
 	"github.com/jordy2254/indoormaprestapi/interfaces/gorm/store"
 	"github.com/jordy2254/indoormaprestapi/model"
 	"io/ioutil"
@@ -20,6 +21,7 @@ func AddRoomAPI(router *mux.Router, roomStore *store.RoomStore) {
 	router.HandleFunc("/Rooms/{floorId}/{id}", controller.getRoom).Methods("GET", "OPTIONS")
 	router.HandleFunc("/Rooms/{floorId}/{id}", controller.updateRoom).Methods("POST")
 	router.HandleFunc("/Rooms/{floorId}", controller.createRoom).Methods("POST")
+	router.HandleFunc("/Rooms/{floorId}/{id}/polygon", controller.generatePolygon).Methods("GET")
 }
 
 
@@ -85,6 +87,28 @@ func (rc *RoomController) getRoom(w http.ResponseWriter, r *http.Request) {
 	_ = floorId
 	w.WriteHeader(http.StatusAccepted)
 	json.NewEncoder(w).Encode(rc.roomStore.GetRoomById(id))
+}
+
+func (rc *RoomController) generatePolygon(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	fmt.Println("Endpoint Hit: Generate Polygon")
+	id, err := strconv.Atoi(params["id"])
+	if err != nil {
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+	floorId, err := strconv.Atoi(params["floorId"])
+	if err != nil {
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+	_ = floorId
+
+	room := rc.roomStore.GetRoomById(id)
+	points := application.CalculatePolygonPoints(room)
+
+	w.WriteHeader(http.StatusAccepted)
+	json.NewEncoder(w).Encode(points)
 }
 
 func unmarshalRoomRequest(w http.ResponseWriter, r *http.Request) (model.Room, error) {
