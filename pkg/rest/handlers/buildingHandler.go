@@ -15,12 +15,12 @@ type BuildingController struct {
 	BuildingStore *store.BuildingStore
 }
 
-func AddBuildingAPI(router *mux.Router, buildingStore *store.BuildingStore) {
+func AddBuildingAPI(rh *RouteHelper,  buildingStore *store.BuildingStore) {
 	controller := BuildingController{BuildingStore: buildingStore}
 
-	router.HandleFunc("/Buildings/{mapId}/{id}", controller.getBuilding).Methods("GET", "OPTIONS")
-	router.HandleFunc("/Buildings/{mapId}/{id}", controller.updateBuilding).Methods("POST")
-	router.HandleFunc("/Buildings/{mapId}", controller.createBuilding).Methods("POST")
+	rh.protectedRoute("/Buildings/{mapId}/{id}", controller.getBuilding).Methods("GET", "OPTIONS")
+	rh.protectedRoute("/Buildings/{mapId}/{id}", controller.updateBuilding).Methods("POST")
+	rh.protectedRoute("/Buildings/{mapId}", controller.createBuilding).Methods("POST")
 }
 
 

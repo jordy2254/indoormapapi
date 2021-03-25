@@ -14,7 +14,6 @@ func New(db *gorm.DB) http.Handler {
 	auth0Middleware := middleware.CreateAuth0MiddleWare("http://192.168.0.28:3500","https://dev-e5s8h580.us.auth0.com/")
 
 	router := mux.NewRouter()
-	router.Use(auth0Middleware.Handler)
 
 	mapStore := store.NewMapStore(db)
 	buildingStore := store.NewBuildingStore(db)
@@ -22,12 +21,13 @@ func New(db *gorm.DB) http.Handler {
 	roomStore := store.NewRoomStore(db)
 	indentStore := store.NewIndentStore(db)
 
+	rh := handlers.NewRouteHelper(router, auth0Middleware)
 
-	handlers.AddMapAPI(router, &mapStore)
-	handlers.AddBuildingAPI(router, &buildingStore)
-	handlers.AddFloorAPI(router, &floorStore)
-	handlers.AddRoomAPI(router, &roomStore)
-	handlers.AddIndentAPI(router, &indentStore)
+	handlers.AddMapAPI(rh, &mapStore)
+	handlers.AddBuildingAPI(rh, &buildingStore)
+	handlers.AddFloorAPI(rh, &floorStore)
+	handlers.AddRoomAPI(rh, &roomStore)
+	handlers.AddIndentAPI(rh, &indentStore)
 
 	return router
 }

@@ -16,12 +16,12 @@ type RoomController struct {
 	roomStore *store.RoomStore
 }
 
-func AddRoomAPI(router *mux.Router, roomStore *store.RoomStore) {
+func AddRoomAPI(rh *RouteHelper, roomStore *store.RoomStore) {
 	controller := RoomController{roomStore: roomStore}
-	router.HandleFunc("/Rooms/{floorId}/{id}", controller.getRoom).Methods("GET", "OPTIONS")
-	router.HandleFunc("/Rooms/{floorId}/{id}", controller.updateRoom).Methods("POST")
-	router.HandleFunc("/Rooms/{floorId}", controller.createRoom).Methods("POST")
-	router.HandleFunc("/Rooms/{floorId}/{id}/polygon", controller.generatePolygon).Methods("GET")
+	rh.protectedRoute("/Rooms/{floorId}/{id}", controller.getRoom).Methods("GET", "OPTIONS")
+	rh.protectedRoute("/Rooms/{floorId}/{id}", controller.updateRoom).Methods("POST")
+	rh.protectedRoute("/Rooms/{floorId}", controller.createRoom).Methods("POST")
+	rh.protectedRoute("/Rooms/{floorId}/{id}/polygon", controller.generatePolygon).Methods("GET")
 }
 
 

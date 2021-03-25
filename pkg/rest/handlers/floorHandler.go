@@ -15,12 +15,12 @@ type FloorController struct {
 	floorStore *store.FloorStore
 }
 
-func AddFloorAPI(router *mux.Router, buildingStore *store.FloorStore) {
+func AddFloorAPI(rh *RouteHelper,  buildingStore *store.FloorStore) {
 	controller := FloorController{floorStore: buildingStore}
 
-	router.HandleFunc("/Floors/{buildingId}/{id}", controller.getFloor).Methods("GET")
-	router.HandleFunc("/Floors/{buildingId}/{id}", controller.updateFloor).Methods("POST")
-	router.HandleFunc("/Floors/{buildingId}", controller.createFloor).Methods("POST")
+	rh.protectedRoute("/Floors/{buildingId}/{id}", controller.getFloor).Methods("GET")
+	rh.protectedRoute("/Floors/{buildingId}/{id}", controller.updateFloor).Methods("POST")
+	rh.protectedRoute("/Floors/{buildingId}", controller.createFloor).Methods("POST")
 }
 
 func (fc *FloorController) createFloor(w http.ResponseWriter, r *http.Request) {

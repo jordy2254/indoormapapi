@@ -15,11 +15,11 @@ type IndentController struct {
 	indentStore *store.IndentStore
 }
 
-func AddIndentAPI(router *mux.Router, indentStore *store.IndentStore) {
+func AddIndentAPI(rh *RouteHelper,  indentStore *store.IndentStore) {
 	controller := IndentController{indentStore: indentStore}
-	router.HandleFunc("/Indents/{id}", controller.getIndent).Methods("GET", "OPTIONS")
-	router.HandleFunc("/Indents/{id}", controller.updateIndent).Methods("PUT")
-	router.HandleFunc("/Indents/", controller.createIndent).Methods("POST")
+	rh.protectedRoute("/Indents/{id}", controller.getIndent).Methods("GET", "OPTIONS")
+	rh.protectedRoute("/Indents/{id}", controller.updateIndent).Methods("PUT")
+	rh.protectedRoute("/Indents/", controller.createIndent).Methods("POST")
 }
 
 

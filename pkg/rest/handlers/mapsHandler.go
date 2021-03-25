@@ -21,15 +21,16 @@ type SyncMapRequest struct {
 	MapPass string `json:"password"`
 }
 
-func AddMapAPI(router *mux.Router, mapStore *store.MapStore) {
+func AddMapAPI(rh *RouteHelper, mapStore *store.MapStore) {
 	controller := MapsController{MapStore: mapStore}
 
-	router.HandleFunc("/maps/sync", controller.sync).Methods("POST")
-	router.HandleFunc("/maps/{id}", controller.delete).Methods("DELETE")
-	router.HandleFunc("/maps/{id}", controller.get).Methods("GET")
-	router.HandleFunc("/maps/{id}", controller.update).Methods("POST")
-	router.HandleFunc("/maps", controller.create).Methods("POST")
-	router.HandleFunc("/maps", controller.userMaps).Methods("GET")
+	rh.openRoute("/maps/sync", controller.sync).Methods("POST")
+	rh.protectedRoute("/maps/{id}", controller.delete).Methods("DELETE")
+	rh.protectedRoute("/maps/{id}", controller.delete).Methods("DELETE")
+	rh.protectedRoute("/maps/{id}", controller.get).Methods("GET")
+	rh.protectedRoute("/maps/{id}", controller.update).Methods("POST")
+	rh.protectedRoute("/maps", controller.create).Methods("POST")
+	rh.protectedRoute("/maps", controller.userMaps).Methods("GET")
 }
 
 func (mc *MapsController) sync(wr http.ResponseWriter, req *http.Request) {

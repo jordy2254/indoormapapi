@@ -32,6 +32,7 @@ type MapNode struct {
 	Location   Point2f `json:"location" gorm:"embedded;embeddedPrefix:location_"`
 	RootNode   bool    `json:"rootNode"`
 	FloorIndex *int    `json:"floorIndex"`
+	NorthAngle float64 `json:"northAngle"`
 }
 
 type NodeEdge struct {
