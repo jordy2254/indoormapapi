@@ -14,10 +14,11 @@ import (
 
 type IndentController struct {
 	indentStore *store.IndentStore
+	logger *logging.Logger
 }
 
 func AddIndentAPI(rh *RouteHelper, indentStore *store.IndentStore, logger *logging.Logger) {
-	controller := IndentController{indentStore: indentStore}
+	controller := IndentController{indentStore: indentStore, logger: logger}
 	rh.protectedRoute("/Indents/{id}", controller.getIndent).Methods("GET", "OPTIONS")
 	rh.protectedRoute("/Indents/{id}", controller.updateIndent).Methods("PUT")
 	rh.protectedRoute("/Indents/", controller.createIndent).Methods("POST")

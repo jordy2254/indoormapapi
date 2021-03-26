@@ -14,10 +14,11 @@ import (
 
 type BuildingController struct {
 	BuildingStore *store.BuildingStore
+	logger *logging.Logger
 }
 
 func AddBuildingAPI(rh *RouteHelper, buildingStore *store.BuildingStore, logger *logging.Logger) {
-	controller := BuildingController{BuildingStore: buildingStore}
+	controller := BuildingController{BuildingStore: buildingStore, logger: logger}
 
 	rh.protectedRoute("/Buildings/{mapId}/{id}", controller.getBuilding).Methods("GET", "OPTIONS")
 	rh.protectedRoute("/Buildings/{mapId}/{id}", controller.updateBuilding).Methods("POST")

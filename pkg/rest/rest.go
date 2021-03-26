@@ -13,8 +13,10 @@ import (
 func New(db *gorm.DB, logger *logging.Logger) http.Handler {
 
 	auth0Middleware := middleware.CreateAuth0MiddleWare("http://192.168.0.28:3500","https://dev-e5s8h580.us.auth0.com/")
+	loggerMiddleware := middleware.NewRouteLogger(logger)
 
 	router := mux.NewRouter()
+	router.Use(loggerMiddleware.Handler)
 
 	mapStore := store.NewMapStore(db)
 	buildingStore := store.NewBuildingStore(db)
@@ -23,6 +25,8 @@ func New(db *gorm.DB, logger *logging.Logger) http.Handler {
 	indentStore := store.NewIndentStore(db)
 	pathStore := store.NewPathStore(db)
 	sensorStore := store.NewSensorStore(db)
+
+
 
 	rh := handlers.NewRouteHelper(router, auth0Middleware)
 

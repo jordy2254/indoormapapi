@@ -7,9 +7,10 @@ import (
 
 type SensorController struct {
 	sensorStore *store.SensorStore
+	logger *logging.Logger
 }
 
 func AddSensorAPI(rh *RouteHelper, sensorStore *store.SensorStore, logger *logging.Logger) {
-	controller := SensorController{sensorStore: sensorStore}
+	controller := SensorController{sensorStore: sensorStore, logger: logger}
 	_ = controller
 }

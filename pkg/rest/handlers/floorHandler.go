@@ -14,10 +14,11 @@ import (
 
 type FloorController struct {
 	floorStore *store.FloorStore
+	logger *logging.Logger
 }
 
 func AddFloorAPI(rh *RouteHelper, buildingStore *store.FloorStore, logger *logging.Logger) {
-	controller := FloorController{floorStore: buildingStore}
+	controller := FloorController{floorStore: buildingStore, logger: logger}
 
 	rh.protectedRoute("/Floors/{buildingId}/{id}", controller.getFloor).Methods("GET")
 	rh.protectedRoute("/Floors/{buildingId}/{id}", controller.updateFloor).Methods("POST")

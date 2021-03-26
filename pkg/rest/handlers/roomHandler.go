@@ -15,10 +15,11 @@ import (
 
 type RoomController struct {
 	roomStore *store.RoomStore
+	logger *logging.Logger
 }
 
 func AddRoomAPI(rh *RouteHelper, roomStore *store.RoomStore, logger *logging.Logger) {
-	controller := RoomController{roomStore: roomStore}
+	controller := RoomController{roomStore: roomStore, logger: logger}
 	rh.protectedRoute("/Rooms/{floorId}/{id}", controller.getRoom).Methods("GET", "OPTIONS")
 	rh.protectedRoute("/Rooms/{floorId}/{id}", controller.updateRoom).Methods("POST")
 	rh.protectedRoute("/Rooms/{floorId}", controller.createRoom).Methods("POST")

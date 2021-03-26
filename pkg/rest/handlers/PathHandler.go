@@ -8,10 +8,11 @@ import (
 
 type PathsController struct {
 	pathStore *store.PathStore
+	logger *logging.Logger
 }
 
 func AddPathsAPI(rh *RouteHelper, pathStore *store.PathStore, logger *logging.Logger) {
-	controller := PathsController{pathStore: pathStore}
+	controller := PathsController{pathStore: pathStore, logger: logger}
 
 	rh.protectedRoute("paths/nodes", controller.createNode).Methods("POST")
 	rh.protectedRoute("paths/nodes/{id}", controller.updateNode).Methods("POST")

@@ -15,6 +15,7 @@ import (
 
 type MapsController struct {
 	MapStore *store.MapStore
+	logger *logging.Logger
 }
 
 type SyncMapRequest struct {
@@ -23,7 +24,7 @@ type SyncMapRequest struct {
 }
 
 func AddMapAPI(rh *RouteHelper, mapStore *store.MapStore, logger *logging.Logger) {
-	controller := MapsController{MapStore: mapStore}
+	controller := MapsController{MapStore: mapStore, logger: logger}
 
 	rh.openRoute("/maps/sync", controller.sync).Methods("POST")
 	rh.protectedRoute("/maps/{id}", controller.delete).Methods("DELETE")
