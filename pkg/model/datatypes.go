@@ -32,7 +32,6 @@ type MapNode struct {
 	Location   Point2f `json:"location" gorm:"embedded;embeddedPrefix:location_"`
 	RootNode   bool    `json:"rootNode"`
 	FloorIndex *int    `json:"floorIndex"`
-	NorthAngle float64 `json:"northAngle"`
 }
 
 type NodeEdge struct {
@@ -58,6 +57,7 @@ type Map struct {
 	Users     []Auth0User `json:"-" gorm:"many2many:user_map_jt;"`
 	Nodes     []MapNode   `json:"nodes" gorm:"references:Id"`
 	Edges     []NodeEdge  `json:"edges" gorm:"references:Id"`
+	NorthAngle float64 `json:"northAngle"`
 	Deleted gorm.DeletedAt
 }
 
