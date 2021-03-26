@@ -6,6 +6,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/jordy2254/indoormaprestapi/pkg/gorm/store"
 	"github.com/jordy2254/indoormaprestapi/pkg/model"
+	"github.com/op/go-logging"
 	"io/ioutil"
 	"net/http"
 	"strconv"
@@ -15,7 +16,7 @@ type IndentController struct {
 	indentStore *store.IndentStore
 }
 
-func AddIndentAPI(rh *RouteHelper,  indentStore *store.IndentStore) {
+func AddIndentAPI(rh *RouteHelper, indentStore *store.IndentStore, logger *logging.Logger) {
 	controller := IndentController{indentStore: indentStore}
 	rh.protectedRoute("/Indents/{id}", controller.getIndent).Methods("GET", "OPTIONS")
 	rh.protectedRoute("/Indents/{id}", controller.updateIndent).Methods("PUT")

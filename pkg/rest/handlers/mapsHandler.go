@@ -7,6 +7,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/jordy2254/indoormaprestapi/pkg/gorm/store"
 	"github.com/jordy2254/indoormaprestapi/pkg/model"
+	"github.com/op/go-logging"
 	"io/ioutil"
 	"net/http"
 	"strconv"
@@ -21,7 +22,7 @@ type SyncMapRequest struct {
 	MapPass string `json:"password"`
 }
 
-func AddMapAPI(rh *RouteHelper, mapStore *store.MapStore) {
+func AddMapAPI(rh *RouteHelper, mapStore *store.MapStore, logger *logging.Logger) {
 	controller := MapsController{MapStore: mapStore}
 
 	rh.openRoute("/maps/sync", controller.sync).Methods("POST")

@@ -7,6 +7,7 @@ import (
 	"github.com/jordy2254/indoormaprestapi/pkg/gorm/store"
 	"github.com/jordy2254/indoormaprestapi/pkg/model"
 	"github.com/jordy2254/indoormaprestapi/pkg/utils"
+	"github.com/op/go-logging"
 	"io/ioutil"
 	"net/http"
 	"strconv"
@@ -16,7 +17,7 @@ type RoomController struct {
 	roomStore *store.RoomStore
 }
 
-func AddRoomAPI(rh *RouteHelper, roomStore *store.RoomStore) {
+func AddRoomAPI(rh *RouteHelper, roomStore *store.RoomStore, logger *logging.Logger) {
 	controller := RoomController{roomStore: roomStore}
 	rh.protectedRoute("/Rooms/{floorId}/{id}", controller.getRoom).Methods("GET", "OPTIONS")
 	rh.protectedRoute("/Rooms/{floorId}/{id}", controller.updateRoom).Methods("POST")

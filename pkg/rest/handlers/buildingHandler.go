@@ -6,6 +6,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/jordy2254/indoormaprestapi/pkg/gorm/store"
 	"github.com/jordy2254/indoormaprestapi/pkg/model"
+	"github.com/op/go-logging"
 	"io/ioutil"
 	"net/http"
 	"strconv"
@@ -15,7 +16,7 @@ type BuildingController struct {
 	BuildingStore *store.BuildingStore
 }
 
-func AddBuildingAPI(rh *RouteHelper,  buildingStore *store.BuildingStore) {
+func AddBuildingAPI(rh *RouteHelper, buildingStore *store.BuildingStore, logger *logging.Logger) {
 	controller := BuildingController{BuildingStore: buildingStore}
 
 	rh.protectedRoute("/Buildings/{mapId}/{id}", controller.getBuilding).Methods("GET", "OPTIONS")
