@@ -6,7 +6,6 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/jordy2254/indoormaprestapi/pkg/gorm/store"
 	"github.com/jordy2254/indoormaprestapi/pkg/model"
-	"github.com/jordy2254/indoormaprestapi/pkg/utils"
 	"github.com/op/go-logging"
 	"io/ioutil"
 	"net/http"
@@ -107,7 +106,7 @@ func (rc *RoomController) generatePolygon(w http.ResponseWriter, r *http.Request
 	_ = floorId
 
 	room := rc.roomStore.GetRoomById(id)
-	points := utils.CalculatePolygonPoints(room)
+	points := model.CalculatePolygonPoints(room)
 
 	w.WriteHeader(http.StatusAccepted)
 	json.NewEncoder(w).Encode(points)

@@ -112,6 +112,7 @@ type Room struct {
 	Location   Point2f  `json:"location" gorm:"embedded;embeddedPrefix:location_"`
 	Dimensions Point2f  `json:"dimensions" gorm:"embedded;embeddedPrefix:size_"`
 	Indents    []Indent `json:"indents" gorm:"references:Id"`
+	Polygon    []Point2f `json:"polygon" gorm:"-"`
 }
 
 func (building *Building) BeforeCreate(tx *gorm.DB) (err error) {
@@ -133,11 +134,17 @@ func (floor *Floor) BeforeCreate(tx *gorm.DB) (err error) {
 	return
 }
 
-func (room *Room) BeforeCreate(tx *gorm.DB) (err error) {
-	for i := 0; i < len(room.Indents); i++ {
-		room.Indents[i].MapId = room.MapId
-		room.Indents[i].BuildingId = room.BuildingId
-		room.Indents[i].FloorId = room.FloorId
+
+func (r *Room) AfterFind(tx *gorm.DB) (err error) {
+	r.Polygon = CalculatePolygonPoints(*r)
+	return nil
+}
+
+func (r *Room) BeforeCreate(tx *gorm.DB) (err error) {
+	for i := 0; i < len(r.Indents); i++ {
+		r.Indents[i].MapId = r.MapId
+		r.Indents[i].BuildingId = r.BuildingId
+		r.Indents[i].FloorId = r.FloorId
 	}
 	return
 }

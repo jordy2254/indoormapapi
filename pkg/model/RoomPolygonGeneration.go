@@ -1,13 +1,12 @@
-package utils
+package model
 
 import (
 	"errors"
-	"github.com/jordy2254/indoormaprestapi/pkg/model"
 )
 
 type PairPoint2f struct {
-	first  model.Point2f
-	second model.Point2f
+	first  Point2f
+	second Point2f
 }
 
 func removePoint(array []*PairPoint2f, point *PairPoint2f) []*PairPoint2f {
@@ -36,14 +35,14 @@ func removePoint(array []*PairPoint2f, point *PairPoint2f) []*PairPoint2f {
 	return array
 }
 
-func CalculatePolygonPoints(room model.Room) []model.Point2f {
+func CalculatePolygonPoints(room Room) []Point2f {
 	edgeData := CalculatePolygonEdgePairs(room)
 
 	var firstPair *PairPoint2f
 	var lastPair *PairPoint2f
 	var panic int
 
-	var pointers []*model.Point2f
+	var pointers []*Point2f
 
 	for panic < len(edgeData)*2 {
 		panic++
@@ -54,14 +53,14 @@ func CalculatePolygonPoints(room model.Room) []model.Point2f {
 			continue
 		}
 
-		if model.PointsEqual(lastPair.second, firstPair.first) {
+		if PointsEqual(lastPair.second, firstPair.first) {
 			break
 		}
 
 		var current *PairPoint2f
 
 		for _, tmp := range edgeData {
-			if model.PointsEqual(tmp.first, lastPair.second) {
+			if PointsEqual(tmp.first, lastPair.second) {
 				current = tmp
 				break
 			}
@@ -75,14 +74,14 @@ func CalculatePolygonPoints(room model.Room) []model.Point2f {
 		lastPair = current
 
 	}
-	var returnVal []model.Point2f
+	var returnVal []Point2f
 	for _, value := range pointers {
 		returnVal = append(returnVal, *value)
 	}
 	return returnVal
 }
 
-func CalculatePolygonEdgePairs(room model.Room) []*PairPoint2f {
+func CalculatePolygonEdgePairs(room Room) []*PairPoint2f {
 	var roomEdges []*PairPoint2f
 	var indentEdges []*PairPoint2f
 
@@ -109,11 +108,11 @@ func CalculatePolygonEdgePairs(room model.Room) []*PairPoint2f {
 			tmp := (*found).second
 			(*found).second = (*indentWall).first
 
-			if !model.PointsEqual((*indentWall).second, tmp) {
+			if !PointsEqual((*indentWall).second, tmp) {
 				roomEdges = append(roomEdges, &PairPoint2f{indentWall.second, tmp})
 			}
 
-			if model.PointsEqual(found.first, found.second) {
+			if PointsEqual(found.first, found.second) {
 				roomEdges = removePoint(roomEdges, found)
 			}
 
@@ -128,8 +127,8 @@ func CalculatePolygonEdgePairs(room model.Room) []*PairPoint2f {
 
 	for _, tmpWall := range indentEdges {
 		allWalls := append(roomEdges, indentEdges...)
-		var firstEdges []model.Point2f
-		var secondEdges []model.Point2f
+		var firstEdges []Point2f
+		var secondEdges []Point2f
 
 		for _, wall := range allWalls {
 			firstEdges = append(firstEdges, wall.first)
@@ -145,19 +144,19 @@ func CalculatePolygonEdgePairs(room model.Room) []*PairPoint2f {
 		)
 
 		for _, edge := range firstEdges {
-			if model.PointsEqual(edge, tmpWall.first) {
+			if PointsEqual(edge, tmpWall.first) {
 				firstCount1++
 			}
-			if model.PointsEqual(edge, tmpWall.second) {
+			if PointsEqual(edge, tmpWall.second) {
 				firstCount2++
 			}
 		}
 
 		for _, edge := range secondEdges {
-			if model.PointsEqual(edge, tmpWall.first) {
+			if PointsEqual(edge, tmpWall.first) {
 				secondCount1++
 			}
-			if model.PointsEqual(edge, tmpWall.second) {
+			if PointsEqual(edge, tmpWall.second) {
 				secondCount2++
 			}
 		}
@@ -172,7 +171,7 @@ func CalculatePolygonEdgePairs(room model.Room) []*PairPoint2f {
 	return append(roomEdges, indentEdges...)
 }
 
-func calculateStartPointsOfIndent(room model.Room, indent model.Indent) (error, *model.Point2f) {
+func calculateStartPointsOfIndent(room Room, indent Indent) (error, *Point2f) {
 	if indent.WallKeyA != "" && indent.WallKeyB != "" {
 		var xStart float64 = 0
 		var yStart float64 = 0
@@ -185,7 +184,7 @@ func calculateStartPointsOfIndent(room model.Room, indent model.Indent) (error, 
 			xStart = *room.Dimensions.X - *indent.Dimensions.X
 		}
 
-		return nil, &model.Point2f{X: &xStart, Y: &yStart}
+		return nil, &Point2f{X: &xStart, Y: &yStart}
 	} else if indent.WallKeyA != "" {
 		var xStart float64 = 0
 		var yStart float64 = 0
@@ -211,7 +210,7 @@ func calculateStartPointsOfIndent(room model.Room, indent model.Indent) (error, 
 			return errors.New("No indent location found for" + indent.WallKeyA), nil
 		}
 
-		return nil, &model.Point2f{X: &xStart, Y: &yStart}
+		return nil, &Point2f{X: &xStart, Y: &yStart}
 	}
 
 	return errors.New("No indent location found"), nil
@@ -223,10 +222,10 @@ func calculateRectangleEdgePairs(x, y, width, height float64) []*PairPoint2f {
 	xPWidth := x + width
 	yPHeight := y + height
 
-	tl := model.Point2f{X: &x, Y: &y}
-	tr := model.Point2f{X: &xPWidth, Y: &y}
-	bl := model.Point2f{X: &x, Y: &yPHeight}
-	br := model.Point2f{X: &xPWidth, Y: &yPHeight}
+	tl := Point2f{X: &x, Y: &y}
+	tr := Point2f{X: &xPWidth, Y: &y}
+	bl := Point2f{X: &x, Y: &yPHeight}
+	br := Point2f{X: &xPWidth, Y: &yPHeight}
 
 	points[0] = &PairPoint2f{first: tl, second: tr}
 	points[1] = &PairPoint2f{first: tr, second: br}
@@ -236,7 +235,7 @@ func calculateRectangleEdgePairs(x, y, width, height float64) []*PairPoint2f {
 	return points
 }
 
-func linesIntersect(p1, p2, p3, p4 model.Point2f) bool {
+func linesIntersect(p1, p2, p3, p4 Point2f) bool {
 	//vertical line
 	if *p1.X == *p3.X && *p2.X == *p3.X && *p4.X == *p1.X {
 		//posative increase
