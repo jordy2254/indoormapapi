@@ -10,6 +10,7 @@ import (
 	"github.com/op/go-logging"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"strconv"
 )
 
@@ -63,6 +64,7 @@ func (mc *MapsController) sync(wr http.ResponseWriter, req *http.Request) {
 		return
 	}
 	json.NewEncoder(wr).Encode(m)
+	json.NewEncoder(os.Stdout).Encode(m)
 }
 
 func (mc *MapsController) delete(wr http.ResponseWriter, req *http.Request) {

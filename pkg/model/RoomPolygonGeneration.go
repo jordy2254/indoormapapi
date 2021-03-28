@@ -2,12 +2,8 @@ package model
 
 import (
 	"errors"
+	"fmt"
 )
-
-type PairPoint2f struct {
-	first  Point2f
-	second Point2f
-}
 
 func removePoint(array []*PairPoint2f, point *PairPoint2f) []*PairPoint2f {
 	index := -1
@@ -36,7 +32,7 @@ func removePoint(array []*PairPoint2f, point *PairPoint2f) []*PairPoint2f {
 }
 
 func CalculatePolygonPoints(room Room) []Point2f {
-	edgeData := CalculatePolygonEdgePairs(room)
+	edgeData := CalculatePolygonEdgePairs(room, true)
 
 	var firstPair *PairPoint2f
 	var lastPair *PairPoint2f
@@ -49,18 +45,18 @@ func CalculatePolygonPoints(room Room) []Point2f {
 		if firstPair == nil {
 			firstPair = edgeData[0]
 			lastPair = firstPair
-			pointers = append(pointers, &firstPair.first)
+			pointers = append(pointers, &firstPair.First)
 			continue
 		}
 
-		if PointsEqual(lastPair.second, firstPair.first) {
+		if PointsEqual(lastPair.Second, firstPair.First) {
 			break
 		}
 
 		var current *PairPoint2f
 
 		for _, tmp := range edgeData {
-			if PointsEqual(tmp.first, lastPair.second) {
+			if PointsEqual(tmp.First, lastPair.Second) {
 				current = tmp
 				break
 			}
@@ -70,7 +66,7 @@ func CalculatePolygonPoints(room Room) []Point2f {
 			break
 		}
 
-		pointers = append(pointers, &current.first)
+		pointers = append(pointers, &current.First)
 		lastPair = current
 
 	}
@@ -81,9 +77,10 @@ func CalculatePolygonPoints(room Room) []Point2f {
 	return returnVal
 }
 
-func CalculatePolygonEdgePairs(room Room) []*PairPoint2f {
+func CalculatePolygonEdgePairs(room Room, excludeEntrances bool) []*PairPoint2f {
 	var roomEdges []*PairPoint2f
 	var indentEdges []*PairPoint2f
+	var entranceEdges []*PairPoint2f
 
 	roomEdges = append(roomEdges, calculateRectangleEdgePairs(0, 0, *room.Dimensions.X, *room.Dimensions.Y)...)
 
@@ -93,26 +90,77 @@ func CalculatePolygonEdgePairs(room Room) []*PairPoint2f {
 		indentEdges = append(indentEdges, calculateRectangleEdgePairs(*startPoints.X, *startPoints.Y, *indent.Dimensions.X, *indent.Dimensions.Y)...)
 	}
 
+	if !excludeEntrances {
+		for _, entrance := range room.Entrances {
+			var(
+				x1 float64
+				y1 float64
+				x2 float64
+				y2 float64
+			)
+
+			if entrance.WallKey == "LEFT" || entrance.WallKey == "RIGHT" {
+				y1 = entrance.Location
+				y2 = entrance.Location + entrance.Length
+				if entrance.WallKey == "LEFT"{
+					x1 = 0
+					x2 = 0
+				}
+
+				if entrance.WallKey == "RIGHT"{
+					x1 = *room.Dimensions.X
+					x2 = *room.Dimensions.X
+				}
+			}
+
+			if entrance.WallKey == "TOP" || entrance.WallKey == "BOTTOM" {
+				x1 = entrance.Location
+				x2 = entrance.Location + entrance.Length
+				if entrance.WallKey == "TOP"{
+					x1 = 0
+					y2 = 0
+				}
+				if entrance.WallKey == "BOTTOM"{
+					y1 = *room.Dimensions.Y
+					y2 = *room.Dimensions.Y
+				}
+			}
+
+
+			entranceEdges = append(entranceEdges, &PairPoint2f{
+				First:  Point2f{
+					X: &x1,
+					Y: &y1,
+				},
+				Second: Point2f{
+					X: &x2,
+					Y: &y2,
+				},
+			})
+		}
+	}
+
 	var toRemove []*PairPoint2f
 
 	for _, indentWall := range indentEdges {
 		var found *PairPoint2f
 		for _, roomWall := range roomEdges {
-			if linesIntersect(roomWall.first, roomWall.second, indentWall.first, indentWall.second) {
+			if linesIntersect(roomWall.First, roomWall.Second, indentWall.First, indentWall.Second) {
 				found = roomWall
 				break
 			}
 		}
 
 		if found != nil {
-			tmp := (*found).second
-			(*found).second = (*indentWall).first
+			tmp := (*found).Second
+			(*found).Second = (*indentWall).First
 
-			if !PointsEqual((*indentWall).second, tmp) {
-				roomEdges = append(roomEdges, &PairPoint2f{indentWall.second, tmp})
+			if !PointsEqual((*indentWall).Second, tmp) {
+				fmt.Printf("Adding wall: %d:%d, %d:%d\n", *indentWall.Second.X, *indentWall.Second.Y, *tmp.X, *tmp.Y)
+				roomEdges = append(roomEdges, &PairPoint2f{indentWall.Second, tmp})
 			}
 
-			if PointsEqual(found.first, found.second) {
+			if PointsEqual(found.First, found.Second) {
 				roomEdges = removePoint(roomEdges, found)
 			}
 
@@ -125,14 +173,85 @@ func CalculatePolygonEdgePairs(room Room) []*PairPoint2f {
 		roomEdges = removePoint(roomEdges, remove)
 	}
 
+	sortWallsForPoly(indentEdges, roomEdges)
+
+	walls := append(roomEdges, indentEdges...)
+	sortWallsInPointOrder(walls)
+	sortWallsInPointOrder(entranceEdges)
+
+	removeWalls := []*PairPoint2f{}
+
+	for _, entrance := range entranceEdges {
+
+		isVerticalEntrance := *entrance.First.X == *entrance.Second.X
+
+		for _, wall := range walls {
+			isVerticalWall := *wall.First.X == *wall.Second.X
+
+			//skip if wall and entrance are not on the same plane
+			if isVerticalEntrance != isVerticalWall {
+				continue
+			}
+
+			if !linesIntersect(wall.First, wall.Second, entrance.First, entrance.Second) {
+				continue
+			}
+
+			if !PointsEqual(wall.Second, entrance.Second){
+				walls = append(walls, &PairPoint2f{
+					First:  entrance.Second,
+					Second: wall.Second,
+				})
+			}
+
+			wall.Second = entrance.First
+
+			if PointsEqual(wall.First, wall.Second){
+				removeWalls = append(removeWalls, wall)
+			}
+
+			_ = wall
+			_ = entrance
+		}
+	}
+
+	for _, wall := range removeWalls {
+		walls = removePoint(walls, wall)
+	}
+	return walls
+}
+
+func sortWallsInPointOrder(walls []*PairPoint2f) {
+	for _, wall := range walls {
+		isVerticalWall := *wall.First.X == *wall.Second.X
+
+		if isVerticalWall {
+			Order(wall.First.Y, wall.Second.Y)
+		}
+
+		if !isVerticalWall {
+			Order(wall.First.X, wall.Second.X)
+		}
+	}
+}
+
+func Order(fst *float64, snd *float64) {
+	if *fst > *snd {
+		tmp := snd
+		snd = tmp
+		fst = snd
+	}
+}
+
+func sortWallsForPoly(indentEdges []*PairPoint2f, roomEdges []*PairPoint2f) {
 	for _, tmpWall := range indentEdges {
 		allWalls := append(roomEdges, indentEdges...)
 		var firstEdges []Point2f
 		var secondEdges []Point2f
 
 		for _, wall := range allWalls {
-			firstEdges = append(firstEdges, wall.first)
-			secondEdges = append(secondEdges, wall.second)
+			firstEdges = append(firstEdges, wall.First)
+			secondEdges = append(secondEdges, wall.Second)
 		}
 
 		var (
@@ -144,31 +263,29 @@ func CalculatePolygonEdgePairs(room Room) []*PairPoint2f {
 		)
 
 		for _, edge := range firstEdges {
-			if PointsEqual(edge, tmpWall.first) {
+			if PointsEqual(edge, tmpWall.First) {
 				firstCount1++
 			}
-			if PointsEqual(edge, tmpWall.second) {
+			if PointsEqual(edge, tmpWall.Second) {
 				firstCount2++
 			}
 		}
 
 		for _, edge := range secondEdges {
-			if PointsEqual(edge, tmpWall.first) {
+			if PointsEqual(edge, tmpWall.First) {
 				secondCount1++
 			}
-			if PointsEqual(edge, tmpWall.second) {
+			if PointsEqual(edge, tmpWall.Second) {
 				secondCount2++
 			}
 		}
 
 		if firstCount1 != secondCount1 || firstCount2 != secondCount2 {
-			tmp := tmpWall.first
-			tmpWall.first = tmpWall.second
-			tmpWall.second = tmp
+			tmp := tmpWall.First
+			tmpWall.First = tmpWall.Second
+			tmpWall.Second = tmp
 		}
 	}
-
-	return append(roomEdges, indentEdges...)
 }
 
 func calculateStartPointsOfIndent(room Room, indent Indent) (error, *Point2f) {
@@ -227,10 +344,10 @@ func calculateRectangleEdgePairs(x, y, width, height float64) []*PairPoint2f {
 	bl := Point2f{X: &x, Y: &yPHeight}
 	br := Point2f{X: &xPWidth, Y: &yPHeight}
 
-	points[0] = &PairPoint2f{first: tl, second: tr}
-	points[1] = &PairPoint2f{first: tr, second: br}
-	points[2] = &PairPoint2f{first: br, second: bl}
-	points[3] = &PairPoint2f{first: bl, second: tl}
+	points[0] = &PairPoint2f{First: tl, Second: tr}
+	points[1] = &PairPoint2f{First: tr, Second: br}
+	points[2] = &PairPoint2f{First: br, Second: bl}
+	points[3] = &PairPoint2f{First: bl, Second: tl}
 
 	return points
 }

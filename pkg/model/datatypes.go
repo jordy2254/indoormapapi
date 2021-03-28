@@ -1,13 +1,20 @@
 package model
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
+	"os"
 	"reflect"
 	"regexp"
 	"strings"
 )
+
+type PairPoint2f struct {
+	First  Point2f `json:"fst"`
+	Second Point2f `json:"snd"`
+}
 
 type Point2f struct {
 	X *float64 `json:"x"`
@@ -102,6 +109,14 @@ type Indent struct {
 	Dimensions Point2f `json:"dimensions" gorm:"embedded;embeddedPrefix:size_"`
 }
 
+type Entrance struct {
+	Id         int     `json:"id" gorm:"primaryKey"`
+	RoomId     int     `json:"roomId"`
+	WallKey   string  `json:"wallKey" gorm:"column:wallKey"`
+	Location   float64 `json:"location"`
+	Length	   float64 `json:"length"`
+}
+
 type Room struct {
 	Id         int      `json:"id" gorm:"primaryKey"`
 	FloorId    int      `json:"floorId" gorm:"column:floorId"`
@@ -113,6 +128,8 @@ type Room struct {
 	Dimensions Point2f  `json:"dimensions" gorm:"embedded;embeddedPrefix:size_"`
 	Indents    []Indent `json:"indents" gorm:"references:Id"`
 	Polygon    []Point2f `json:"polygon" gorm:"-"`
+	Walls      []*PairPoint2f `json:"walls" gorm:"-"`
+	Entrances  []Entrance `json:"entrances" gorm:"references:Id"`
 }
 
 func (building *Building) BeforeCreate(tx *gorm.DB) (err error) {
@@ -137,6 +154,9 @@ func (floor *Floor) BeforeCreate(tx *gorm.DB) (err error) {
 
 func (r *Room) AfterFind(tx *gorm.DB) (err error) {
 	r.Polygon = CalculatePolygonPoints(*r)
+	r.Walls = CalculatePolygonEdgePairs(*r, false)
+	json.NewEncoder(os.Stdout).Encode(r.Walls)
+	json.NewEncoder(os.Stdout).Encode(r.Polygon)
 	return nil
 }
 
@@ -150,7 +170,7 @@ func (r *Room) BeforeCreate(tx *gorm.DB) (err error) {
 }
 
 func PointsEqual(p1, p2 Point2f) bool {
-	return p1.X == p2.X && p1.Y == p2.Y
+	return *p1.X == *p2.X && *p1.Y == *p2.Y
 }
 
 func ToTsx() {

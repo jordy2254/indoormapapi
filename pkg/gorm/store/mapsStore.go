@@ -25,6 +25,7 @@ func (mapStore *MapStore) GetMapById(id int) model.Map {
 		Preload("Buildings.Floors.Rooms").
 		Preload("Buildings.Floors.Rooms.Indents").
 		Preload("Buildings.Floors.Sensors").
+		Preload("Buildings.Floors.Rooms.Entrances").
 		Find(&ma, "maps.id=?", id)
 	return ma
 }

@@ -19,7 +19,7 @@ func (rs *RoomStore) CreateRoom(room *model.Room) {
 
 func (rs *RoomStore) GetRoomById(id int) model.Room {
 	var room model.Room
-	rs.DB.Preload("Indents").Find(&room, "rooms.id=?", id)
+	rs.DB.Preload("Indents").Preload("Entrances").Find(&room, "rooms.id=?", id)
 	return room
 }
 
