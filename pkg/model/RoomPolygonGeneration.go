@@ -117,7 +117,7 @@ func CalculatePolygonEdgePairs(room Room, excludeEntrances bool) []*PairPoint2f 
 				x1 = entrance.Location
 				x2 = entrance.Location + entrance.Length
 				if entrance.WallKey == "TOP"{
-					x1 = 0
+					y1 = 0
 					y2 = 0
 				}
 				if entrance.WallKey == "BOTTOM"{
@@ -225,22 +225,28 @@ func sortWallsInPointOrder(walls []*PairPoint2f) {
 	for _, wall := range walls {
 		isVerticalWall := *wall.First.X == *wall.Second.X
 
+		swap := false
 		if isVerticalWall {
-			Order(wall.First.Y, wall.Second.Y)
+			swap = doSwap(wall.First.Y, wall.Second.Y)
 		}
 
 		if !isVerticalWall {
-			Order(wall.First.X, wall.Second.X)
+			swap = doSwap(wall.First.X, wall.Second.X)
+		}
+
+		if swap {
+			tmp := wall.Second
+			wall.Second = wall.First
+			wall.First = tmp
 		}
 	}
 }
 
-func Order(fst *float64, snd *float64) {
+func doSwap(fst *float64, snd *float64) bool{
 	if *fst > *snd {
-		tmp := snd
-		snd = tmp
-		fst = snd
+		return true
 	}
+	return false
 }
 
 func sortWallsForPoly(indentEdges []*PairPoint2f, roomEdges []*PairPoint2f) {
