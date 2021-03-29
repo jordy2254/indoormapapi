@@ -1,91 +1,69 @@
 package main
 
 import (
+	"github.com/jordy2254/indoormaprestapi/pkg/gorm"
+	"github.com/jordy2254/indoormaprestapi/pkg/gorm/store"
 	"github.com/jordy2254/indoormaprestapi/pkg/model"
+	"github.com/tfriedel6/canvas"
 	"github.com/tfriedel6/canvas/sdlcanvas"
 )
 
 func main() {
-	r := model.Room{
-		Name:       "",
-		Location:   model.Point2f{
-			X: ptrFromVar(0),
-			Y: ptrFromVar(0),
-		},
-		Dimensions: model.Point2f{
-			X: ptrFromVar(100),
-			Y: ptrFromVar(100),
-		},
-		Indents: []model.Indent{
-			{
-				WallKeyA: "TOP",
-				WallKeyB: "LEFT",
-				Dimensions: model.Point2f{
-					X: ptrFromVar(10),
-					Y: ptrFromVar(10),
-				},
-			},
+	gormConnectionString := "admin:welcome@tcp(localhost:3306)/project?charset=utf8mb4&parseTime=True&loc=Local"
+	dbConnection := gorm.Connect(gormConnectionString)
+	ms := store.NewMapStore(dbConnection)
+	m := ms.GetMapById(1)
 
-			{
-				WallKeyA: "TOP",
-				Location: 30.0,
-				Dimensions: model.Point2f{
-					X: ptrFromVar(35),
-					Y: ptrFromVar(10),
-				},
-			},
-
-			{
-				WallKeyA: "BOTTOM",
-				WallKeyB: "LEFT",
-				Dimensions: model.Point2f{
-					X: ptrFromVar(35),
-					Y: ptrFromVar(50),
-				},
-			},
-		},
-		Polygon:    nil,
-		Walls:      nil,
-		Entrances:  []model.Entrance{
-			{
-				WallKey:  "BOTTOM",
-				Location: 65,
-				Length:   35,
-			},
-			{
-				WallKey:  "TOP",
-				Location: 65,
-				Length:   35,
-			},
-		},
-	}
-
-	r.Walls = model.CalculatePolygonEdgePairs(r, false)
-	renderWalls(r.Walls)
+	mapRenderer(m)
 }
 
 
-func renderWalls(walls []*model.PairPoint2f) {
+func mapRenderer(m model.Map) {
 	wnd, cv, err := sdlcanvas.CreateWindow(1280, 720, "Hello")
 	if err != nil {
 		panic(err)
 	}
 	defer wnd.Destroy()
+	scale := model.Point2f{
+		X: ptrFromVar(1),
+		Y: ptrFromVar(1),
+	}
 
 	wnd.MainLoop(func() {
 		w, h := float64(cv.Width()), float64(cv.Height())
-		cv.SetFillStyle("#000")
+		cv.SetFillStyle("#888888")
 		cv.FillRect(0, 0, w, h)
-		cv.SetStrokeStyle("#FFF")
-		cv.SetFillStyle("#FF00FF")
+		cv.SetStrokeStyle("#000000")
+		cv.SetFillStyle("#f0ae5d")
+		cv.SetLineWidth(2.0)
 
-		for _, wall := range walls {
-			cv.BeginPath()
-			cv.MoveTo(*wall.First.X + 10, *wall.First.Y + 10)
-			cv.LineTo(*wall.Second.X + 10, *wall.Second.Y + 10)
-			cv.Stroke()
+		for _, building := range m.Buildings {
+			for _, room := range building.Floors[0].Rooms {
+				cv.BeginPath()
+				moveToPoint(cv, room.Polygon[0], room.Location, scale)
+				for _, f := range room.Polygon {
+					lineToPoint(cv, f, room.Location, scale)
+				}
+				lineToPoint(cv, room.Polygon[0], room.Location, scale)
+				cv.Fill()
+
+				for _, wall := range room.Walls {
+					cv.BeginPath()
+					moveToPoint(cv, wall.First, room.Location, scale)
+					lineToPoint(cv, wall.Second, room.Location, scale)
+					cv.Stroke()
+				}
+			}
 		}
 	})
+}
+
+func moveToPoint(cv *canvas.Canvas, point, offset, scale model.Point2f) {
+	cv.MoveTo(((*point.X) * (*scale.X)) + (*offset.X), ((*point.Y) * (*scale.Y)) + (*offset.Y))
+}
+
+func lineToPoint(cv *canvas.Canvas, point, offset, scale model.Point2f){
+	cv.LineTo(((*point.X) * (*scale.X)) + (*offset.X), ((*point.Y) * (*scale.Y)) + (*offset.Y))
 }
 
 func ptrFromVar(x float64) *float64{
