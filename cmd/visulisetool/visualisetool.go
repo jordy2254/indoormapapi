@@ -28,6 +28,56 @@ func mapRenderer(m model.Map) {
 		X: ptrFromVar(1),
 		Y: ptrFromVar(1),
 	}
+	offs := model.Point2f{
+		X: ptrFromVar(0),
+		Y: ptrFromVar(0),
+	}
+
+	wnd.MouseWheel = func(x, y int) {
+		if y > 0 {
+			*scale.X = 1.1 * *scale.X
+			*scale.Y = 1.1 * *scale.Y
+		}
+
+		if y < 0 {
+			*scale.X = 0.9 * *scale.X
+			*scale.Y = 0.9 * *scale.Y
+		}
+
+	}
+
+	initialClick := model.Point2f{
+		X: ptrFromVar(0),
+		Y: ptrFromVar(0),
+	}
+	initialOff := model.Point2f{
+		X: ptrFromVar(0),
+		Y: ptrFromVar(0),
+	}
+	down := false
+
+	wnd.MouseDown = func(button, x, y int) {
+		*initialClick.X = float64(x)
+		*initialClick.Y = float64(y)
+		*initialOff.X = *offs.X
+		*initialOff.Y = *offs.Y
+		down = true
+	}
+
+	wnd.MouseUp = func(button, x, y int) {
+		down = false
+	}
+
+	wnd.MouseMove = func(x, y int) {
+		if !down{
+			return
+		}
+		nx := float64(x) - *initialClick.X + *initialOff.X
+		ny := float64(y) - *initialClick.Y + *initialOff.Y
+
+		*offs.X = nx
+		*offs.Y = ny
+	}
 
 	wnd.MainLoop(func() {
 		w, h := float64(cv.Width()), float64(cv.Height())
@@ -39,18 +89,22 @@ func mapRenderer(m model.Map) {
 
 		for _, building := range m.Buildings {
 			for _, room := range building.Floors[0].Rooms {
-				cv.BeginPath()
-				moveToPoint(cv, room.Polygon[0], room.Location, scale)
-				for _, f := range room.Polygon {
-					lineToPoint(cv, f, room.Location, scale)
+				offset := model.Point2f{
+					X: ptrFromVar(*offs.X + *room.Location.X),
+					Y: ptrFromVar(*offs.Y + *room.Location.Y),
 				}
-				lineToPoint(cv, room.Polygon[0], room.Location, scale)
+				cv.BeginPath()
+				moveToPoint(cv, room.Polygon[0], offset, scale)
+				for _, f := range room.Polygon {
+					lineToPoint(cv, f, offset, scale)
+				}
+				lineToPoint(cv, room.Polygon[0], offset, scale)
 				cv.Fill()
 
 				for _, wall := range room.Walls {
 					cv.BeginPath()
-					moveToPoint(cv, wall.First, room.Location, scale)
-					lineToPoint(cv, wall.Second, room.Location, scale)
+					moveToPoint(cv, wall.First, offset, scale)
+					lineToPoint(cv, wall.Second, offset, scale)
 					cv.Stroke()
 				}
 			}
@@ -59,11 +113,11 @@ func mapRenderer(m model.Map) {
 }
 
 func moveToPoint(cv *canvas.Canvas, point, offset, scale model.Point2f) {
-	cv.MoveTo(((*point.X) * (*scale.X)) + (*offset.X), ((*point.Y) * (*scale.Y)) + (*offset.Y))
+	cv.MoveTo(((*point.X) * (*scale.X)) + (*offset.X * (*scale.X)), ((*point.Y) * (*scale.Y)) + (*offset.Y * (*scale.X)))
 }
 
 func lineToPoint(cv *canvas.Canvas, point, offset, scale model.Point2f){
-	cv.LineTo(((*point.X) * (*scale.X)) + (*offset.X), ((*point.Y) * (*scale.Y)) + (*offset.Y))
+	cv.LineTo(((*point.X) * (*scale.X)) + (*offset.X * (*scale.X)), ((*point.Y) * (*scale.Y)) + (*offset.Y * (*scale.X)))
 }
 
 func ptrFromVar(x float64) *float64{
