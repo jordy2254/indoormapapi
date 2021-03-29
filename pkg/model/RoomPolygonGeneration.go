@@ -179,6 +179,11 @@ func CalculatePolygonEdgePairs(room Room, excludeEntrances bool) []*PairPoint2f 
 
 
 	walls := append(roomEdges, indentEdges...)
+
+	if excludeEntrances{
+		return walls
+	}
+
 	sortWallsInPointOrder(walls)
 	sortWallsInPointOrder(entranceEdges)
 
