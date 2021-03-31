@@ -2,7 +2,6 @@ package model
 
 import (
 	"errors"
-	"fmt"
 )
 
 func removePoint(array []*PairPoint2f, point *PairPoint2f) []*PairPoint2f {
@@ -34,11 +33,6 @@ func removePoint(array []*PairPoint2f, point *PairPoint2f) []*PairPoint2f {
 func CalculatePolygonPoints(room Room) []Point2f {
 	edgeData := CalculatePolygonEdgePairs(room, true)
 
-	fmt.Println("Edge Data")
-	for i, v := range edgeData {
-		fmt.Printf("(%d) %f, %f -> %f,%f\n", i, *v.First.X, *v.First.Y, *v.Second.X, *v.Second.Y)
-	}
-
 	var firstPoint *Point2f
 	var lastPoint *Point2f
 
@@ -50,8 +44,6 @@ func CalculatePolygonPoints(room Room) []Point2f {
 	for i := range indexes {
 		indexes[i] = false
 	}
-
-	fmt.Println("Polygon info")
 	for panic < len(edgeData)*2 {
 		panic++
 		if firstPoint == nil {
@@ -60,8 +52,6 @@ func CalculatePolygonPoints(room Room) []Point2f {
 			indexes[0] = true
 			pointers = append(pointers, firstPoint)
 			pointers = append(pointers, lastPoint)
-
-			fmt.Printf("%f, %f -> %f,%f\n", *firstPoint.X, *firstPoint.Y, *lastPoint.X, *lastPoint.Y)
 			continue
 		}
 
@@ -90,8 +80,6 @@ func CalculatePolygonPoints(room Room) []Point2f {
 
 		if current == nil {
 			break
-		}else{
-			fmt.Printf("%f, %f -> %f,%f\n", *lastPoint.X, *lastPoint.Y, *current.X, *current.Y)
 		}
 
 		pointers = append(pointers, current)
@@ -119,134 +107,102 @@ func CalculatePolygonEdgePairs(room Room, excludeEntrances bool) []*PairPoint2f 
 	}
 
 	if !excludeEntrances {
-		for _, entrance := range room.Entrances {
-			var(
-				x1 float64
-				y1 float64
-				x2 float64
-				y2 float64
-			)
-
-			if entrance.WallKey == "LEFT" || entrance.WallKey == "RIGHT" {
-				y1 = entrance.Location
-				y2 = entrance.Location + entrance.Length
-				if entrance.WallKey == "LEFT"{
-					x1 = 0
-					x2 = 0
-				}
-
-				if entrance.WallKey == "RIGHT"{
-					x1 = *room.Dimensions.X
-					x2 = *room.Dimensions.X
-				}
-			}
-
-			if entrance.WallKey == "TOP" || entrance.WallKey == "BOTTOM" {
-				x1 = entrance.Location
-				x2 = entrance.Location + entrance.Length
-				if entrance.WallKey == "TOP"{
-					y1 = 0
-					y2 = 0
-				}
-				if entrance.WallKey == "BOTTOM"{
-					y1 = *room.Dimensions.Y
-					y2 = *room.Dimensions.Y
-				}
-			}
-
-
-			entranceEdges = append(entranceEdges, &PairPoint2f{
-				First:  Point2f{
-					X: &x1,
-					Y: &y1,
-				},
-				Second: Point2f{
-					X: &x2,
-					Y: &y2,
-				},
-			})
-		}
+		entranceEdges = createEntranceEdges(room, entranceEdges)
 	}
 
+	allWalls := cutoutAndMergeEdges(roomEdges, indentEdges)
+
+	if excludeEntrances {
+		return allWalls
+	}
+
+	return cutoutAndMergeEdges(allWalls, entranceEdges)
+}
+
+func createEntranceEdges(room Room, entranceEdges []*PairPoint2f) []*PairPoint2f {
+	for _, entrance := range room.Entrances {
+		var (
+			x1 float64
+			y1 float64
+			x2 float64
+			y2 float64
+		)
+
+		if entrance.WallKey == "LEFT" || entrance.WallKey == "RIGHT" {
+			y1 = entrance.Location
+			y2 = entrance.Location + entrance.Length
+			if entrance.WallKey == "LEFT" {
+				x1 = 0
+				x2 = 0
+			}
+
+			if entrance.WallKey == "RIGHT" {
+				x1 = *room.Dimensions.X
+				x2 = *room.Dimensions.X
+			}
+		}
+
+		if entrance.WallKey == "TOP" || entrance.WallKey == "BOTTOM" {
+			x1 = entrance.Location
+			x2 = entrance.Location + entrance.Length
+			if entrance.WallKey == "TOP" {
+				y1 = 0
+				y2 = 0
+			}
+			if entrance.WallKey == "BOTTOM" {
+				y1 = *room.Dimensions.Y
+				y2 = *room.Dimensions.Y
+			}
+		}
+
+		entranceEdges = append(entranceEdges, &PairPoint2f{
+			First: Point2f{
+				X: &x1,
+				Y: &y1,
+			},
+			Second: Point2f{
+				X: &x2,
+				Y: &y2,
+			},
+		})
+	}
+	return entranceEdges
+}
+
+func cutoutAndMergeEdges(mainEdges []*PairPoint2f, toCut []*PairPoint2f) []*PairPoint2f {
 	var toRemove []*PairPoint2f
 
-	for _, indentWall := range indentEdges {
+	for _, cutWall := range toCut {
 		var found *PairPoint2f
-		for _, roomWall := range roomEdges {
-			if linesIntersect(roomWall.First, roomWall.Second, indentWall.First, indentWall.Second) {
-				found = roomWall
+		for _, mainWall := range mainEdges {
+			if linesIntersect(mainWall.First, mainWall.Second, cutWall.First, cutWall.Second) {
+				found = mainWall
 				break
 			}
 		}
 
 		if found != nil {
 			tmp := (*found).Second
-			(*found).Second = (*indentWall).First
+			(*found).Second = (*cutWall).First
 
-			if !PointsEqual((*indentWall).Second, tmp) {
-				fmt.Printf("Adding wall: %d:%d, %d:%d\n", *indentWall.Second.X, *indentWall.Second.Y, *tmp.X, *tmp.Y)
-				roomEdges = append(roomEdges, &PairPoint2f{indentWall.Second, tmp})
+			if !PointsEqual((*cutWall).Second, tmp) {
+				mainEdges = append(mainEdges, &PairPoint2f{cutWall.Second, tmp})
 			}
 
 			if PointsEqual(found.First, found.Second) {
-				roomEdges = removePoint(roomEdges, found)
+				mainEdges = removePoint(mainEdges, found)
 			}
 
-			toRemove = append(toRemove, indentWall)
+			toRemove = append(toRemove, cutWall)
 		}
 	}
 
 	for _, remove := range toRemove {
-		indentEdges = removePoint(indentEdges, remove)
-		roomEdges = removePoint(roomEdges, remove)
+		toCut = removePoint(toCut, remove)
+		mainEdges = removePoint(mainEdges, remove)
 	}
 
-	walls := append(roomEdges, indentEdges...)
-
-	if excludeEntrances{
-		return walls
-	}
-
-	removeWalls := []*PairPoint2f{}
-
-	for _, entrance := range entranceEdges {
-
-		isVerticalEntrance := *entrance.First.X == *entrance.Second.X
-
-		for _, wall := range walls {
-			isVerticalWall := *wall.First.X == *wall.Second.X
-
-			//skip if wall and entrance are not on the same plane
-			if isVerticalEntrance != isVerticalWall {
-				continue
-			}
-
-			if !linesIntersect(wall.First, wall.Second, entrance.First, entrance.Second) {
-				continue
-			}
-
-			if !PointsEqual(wall.Second, entrance.Second){
-				walls = append(walls, &PairPoint2f{
-					First:  entrance.Second,
-					Second: wall.Second,
-				})
-			}
-
-			wall.Second = entrance.First
-
-			if PointsEqual(wall.First, wall.Second){
-				removeWalls = append(removeWalls, wall)
-			}
-
-			_ = wall
-			_ = entrance
-		}
-	}
-
-	for _, wall := range removeWalls {
-		walls = removePoint(walls, wall)
-	}
-	return walls
+	return append(mainEdges, toCut...)
 }
 
 func calculateStartPointsOfIndent(room Room, indent Indent) (error, *Point2f) {
