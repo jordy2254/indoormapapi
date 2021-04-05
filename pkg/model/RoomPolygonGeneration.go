@@ -171,7 +171,8 @@ func createEntranceEdges(room Room, entranceEdges []*PairPoint2f) []*PairPoint2f
 
 func cutoutAndMergeEdges(mainEdges []*PairPoint2f, toCut []*PairPoint2f) []*PairPoint2f {
 	var toRemove []*PairPoint2f
-
+	sortWallsInPointOrder(mainEdges)
+	sortWallsInPointOrder(toCut)
 	for _, cutWall := range toCut {
 		var found *PairPoint2f
 		for _, mainWall := range mainEdges {
@@ -294,6 +295,35 @@ func linesIntersect(p1, p2, p3, p4 Point2f) bool {
 		if *p1.X-*p2.X > 0 {
 			return *p3.X <= *p1.X && *p3.X >= *p2.X
 		}
+	}
+	return false
+}
+
+
+func sortWallsInPointOrder(walls []*PairPoint2f) {
+	for _, wall := range walls {
+		isVerticalWall := *wall.First.X == *wall.Second.X
+
+		swap := false
+		if isVerticalWall {
+			swap = doSwap(wall.First.Y, wall.Second.Y)
+		}
+
+		if !isVerticalWall {
+			swap = doSwap(wall.First.X, wall.Second.X)
+		}
+
+		if swap {
+			tmp := wall.Second
+			wall.Second = wall.First
+			wall.First = tmp
+		}
+	}
+}
+
+func doSwap(fst *float64, snd *float64) bool{
+	if *fst > *snd {
+		return true
 	}
 	return false
 }
