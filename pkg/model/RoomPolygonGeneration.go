@@ -121,49 +121,9 @@ func CalculatePolygonEdgePairs(room Room, excludeEntrances bool) []*PairPoint2f 
 
 func createEntranceEdges(room Room, entranceEdges []*PairPoint2f) []*PairPoint2f {
 	for _, entrance := range room.Entrances {
-		var (
-			x1 float64
-			y1 float64
-			x2 float64
-			y2 float64
-		)
-
-		if entrance.WallKey == "LEFT" || entrance.WallKey == "RIGHT" {
-			y1 = entrance.Location
-			y2 = entrance.Location + entrance.Length
-			if entrance.WallKey == "LEFT" {
-				x1 = 0
-				x2 = 0
-			}
-
-			if entrance.WallKey == "RIGHT" {
-				x1 = *room.Dimensions.X
-				x2 = *room.Dimensions.X
-			}
-		}
-
-		if entrance.WallKey == "TOP" || entrance.WallKey == "BOTTOM" {
-			x1 = entrance.Location
-			x2 = entrance.Location + entrance.Length
-			if entrance.WallKey == "TOP" {
-				y1 = 0
-				y2 = 0
-			}
-			if entrance.WallKey == "BOTTOM" {
-				y1 = *room.Dimensions.Y
-				y2 = *room.Dimensions.Y
-			}
-		}
-
 		entranceEdges = append(entranceEdges, &PairPoint2f{
-			First: Point2f{
-				X: &x1,
-				Y: &y1,
-			},
-			Second: Point2f{
-				X: &x2,
-				Y: &y2,
-			},
+			First: NewPoint2f(*entrance.Start.X - *room.Location.X, *entrance.Start.Y - *room.Location.Y),
+			Second: NewPoint2f(*entrance.End.X - *room.Location.X, *entrance.End.Y - *room.Location.Y),
 		})
 	}
 	return entranceEdges

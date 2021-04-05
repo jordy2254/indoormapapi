@@ -104,10 +104,8 @@ type Indent struct {
 
 type Entrance struct {
 	Id         int     `json:"id" gorm:"primaryKey"`
-	RoomId     int     `json:"roomId"`
-	WallKey   string  `json:"wallKey" gorm:"column:wallKey"`
-	Location   float64 `json:"location"`
-	Length	   float64 `json:"length"`
+	Start Point2f `json:"dimensions" gorm:"embedded;embeddedPrefix:start_"`
+	End Point2f `json:"dimensions" gorm:"embedded;embeddedPrefix:end_"`
 }
 
 type Room struct {
@@ -122,7 +120,7 @@ type Room struct {
 	Indents    []Indent `json:"indents" gorm:"references:Id"`
 	Polygon    []Point2f `json:"polygon" gorm:"-"`
 	Walls      []*PairPoint2f `json:"walls" gorm:"-"`
-	Entrances  []Entrance `json:"entrances" gorm:"references:Id"`
+	Entrances  []Entrance `json:"entrances" gorm:"references:Id;many2many:room_entrance_jt;"`
 }
 
 func (building *Building) BeforeCreate(tx *gorm.DB) (err error) {
