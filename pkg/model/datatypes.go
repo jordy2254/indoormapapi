@@ -21,13 +21,6 @@ type Point2f struct {
 	Y *float64 `json:"y"`
 }
 
-func CreatePtrFloat64(x, y float64) Point2f {
-	return Point2f{
-		X: &x,
-		Y: &y,
-	}
-}
-
 type Pair2f struct {
 	First  Point2f `json:"first"`
 	Second Point2f `json:"second"`
@@ -248,4 +241,11 @@ func convertGoTypeToTsxType(t string) string {
 		return "boolean"
 	}
 	panic("No Translation for type: " + t)
+}
+
+func NewPoint2f(x, y float64) Point2f {
+	return Point2f{
+		X: &x,
+		Y: &y,
+	}
 }
