@@ -3,7 +3,6 @@ package model
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/google/uuid"
 	"gorm.io/gorm"
 	"os"
 	"reflect"
@@ -84,7 +83,8 @@ type Floor struct {
 //TODO Change Id to normal int,
 //TODO add SensorId field for string
 type Sensor struct {
-	Id         uuid.UUID `json:"id" gorm:"primaryKey"`
+	Id int `json:"id" gorm:"primaryKey"`
+	SensorId   string     `json:"sensorId"`
 	BuildingId int       `json:"buildingId"`
 	FloorId    int       `json:"floorId"`
 	Location   Point2f   `json:"location" gorm:"embedded;embeddedPrefix:location_"`
