@@ -31,6 +31,7 @@ type MapNode struct {
 	Location   Point2f `json:"location" gorm:"embedded;embeddedPrefix:location_"`
 	RootNode   bool    `json:"rootNode"`
 	FloorIndex *int    `json:"floorIndex"`
+	BiDirectional bool `json:bidirectional`
 }
 
 type NodeEdge struct {
@@ -73,19 +74,14 @@ type Floor struct {
 	BuildingId  int      `json:"buildingId"`
 	FloorNumber *int     `json:"floorNumber"`
 	FloorName   string   `json:"floorName"`
-	MapId       int      `json:"mapId"`
 	Location    Point2f  `json:"location" gorm:"embedded;embeddedPrefix:location_"`
 	Rooms       []Room   `json:"rooms" gorm:"references:Id"`
 	Sensors     []Sensor `json:"sensors"`
 }
 
-
-//TODO Change Id to normal int,
-//TODO add SensorId field for string
 type Sensor struct {
 	Id int `json:"id" gorm:"primaryKey"`
 	SensorId   string     `json:"sensorId"`
-	BuildingId int       `json:"buildingId"`
 	FloorId    int       `json:"floorId"`
 	Location   Point2f   `json:"location" gorm:"embedded;embeddedPrefix:location_"`
 }
@@ -93,9 +89,6 @@ type Sensor struct {
 type Indent struct {
 	Id         int     `json:"id" gorm:"primaryKey"`
 	RoomId     int     `json:"roomId"`
-	MapId      int     `json:"mapId"`
-	BuildingId int     `json:"buildingId"`
-	FloorId    int     `json:"floorId"`
 	WallKeyA   string  `json:"wallKeyA" gorm:"column:wallKeyA"`
 	WallKeyB   string  `json:"wallKeyB" gorm:"column:wallKeyB"`
 	Location   float64 `json:"location"`
@@ -110,8 +103,6 @@ type Entrance struct {
 
 type Room struct {
 	Id         int      `json:"id" gorm:"primaryKey"`
-	FloorId    int      `json:"floorId" gorm:"column:floorId"`
-	MapId      int      `json:"mapId"`
 	BuildingId int      `json:"buildingId"`
 	Rotation   *float64 `json:"rotation"`
 	Name       string   `json:"name"`
@@ -123,41 +114,12 @@ type Room struct {
 	Entrances  []Entrance `json:"entrances" gorm:"references:Id;many2many:room_entrance_jt;"`
 }
 
-func (building *Building) BeforeCreate(tx *gorm.DB) (err error) {
-	for i := 0; i < len(building.Floors); i++ {
-		building.Floors[i].MapId = building.MapId
-	}
-	return
-}
-
-func (floor *Floor) BeforeCreate(tx *gorm.DB) (err error) {
-	for i := 0; i < len(floor.Rooms); i++ {
-		floor.Rooms[i].MapId = floor.MapId
-		floor.Rooms[i].BuildingId = floor.BuildingId
-	}
-
-	for i := 0; i < len(floor.Sensors); i++ {
-		floor.Sensors[i].BuildingId = floor.BuildingId
-	}
-	return
-}
-
-
 func (r *Room) AfterFind(tx *gorm.DB) (err error) {
 	r.Polygon = CalculatePolygonPoints(*r)
 	r.Walls = CalculatePolygonEdgePairs(*r, false)
 	json.NewEncoder(os.Stdout).Encode(r.Walls)
 	json.NewEncoder(os.Stdout).Encode(r.Polygon)
 	return nil
-}
-
-func (r *Room) BeforeCreate(tx *gorm.DB) (err error) {
-	for i := 0; i < len(r.Indents); i++ {
-		r.Indents[i].MapId = r.MapId
-		r.Indents[i].BuildingId = r.BuildingId
-		r.Indents[i].FloorId = r.FloorId
-	}
-	return
 }
 
 func PointsEqual(p1, p2 Point2f) bool {
