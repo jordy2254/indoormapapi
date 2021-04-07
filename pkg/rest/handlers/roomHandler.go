@@ -19,10 +19,10 @@ type RoomController struct {
 
 func AddRoomAPI(rh *RouteHelper, roomStore *store.RoomStore, logger *logging.Logger) {
 	controller := RoomController{roomStore: roomStore, logger: logger}
-	rh.protectedRoute("/Rooms/{buildingId}/{id}", controller.getRoom).Methods("GET", "OPTIONS")
-	rh.protectedRoute("/Rooms/{buildingId}/{id}", controller.updateRoom).Methods("POST")
-	rh.protectedRoute("/Rooms/{buildingId}", controller.createRoom).Methods("POST")
-	rh.protectedRoute("/Rooms/{buildingId}/{id}/polygon", controller.generatePolygon).Methods("GET")
+	rh.protectedRoute("/Rooms/{floorId}/{id}", controller.getRoom).Methods("GET", "OPTIONS")
+	rh.protectedRoute("/Rooms/{floorId}/{id}", controller.updateRoom).Methods("POST")
+	rh.protectedRoute("/Rooms/{floorId}", controller.createRoom).Methods("POST")
+	rh.protectedRoute("/Rooms/{floorId}/{id}/polygon", controller.generatePolygon).Methods("GET")
 }
 
 
@@ -30,16 +30,19 @@ func (rc *RoomController) createRoom(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Endpoint Hit: Create Room")
 
 	params := mux.Vars(r)
-	buildingId, err := strconv.Atoi(params["buildingId"])
+	floorId, err := strconv.Atoi(params["floorId"])
 	if err != nil {
-		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
 	newRoom, err := unmarshalRoomRequest(w, r)
-	if err != nil || newRoom.BuildingId != buildingId{
+	if err != nil {
+		return
+	}
+	if floorId != newRoom.FloorId && newRoom.FloorId != 0 {
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
+	newRoom.FloorId = floorId
 
 	rc.roomStore.CreateRoom(&newRoom)
 	w.WriteHeader(http.StatusCreated)
@@ -54,13 +57,13 @@ func (rc *RoomController) updateRoom(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
-	buildingId, err := strconv.Atoi(params["buildingId"])
+	floorId, err := strconv.Atoi(params["floorId"])
 	if err != nil {
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
 	newRoom, err := unmarshalRoomRequest(w, r)
-	if err != nil || newRoom.BuildingId != buildingId || newRoom.Id != id {
+	if err != nil || newRoom.FloorId != floorId || newRoom.Id != id {
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}

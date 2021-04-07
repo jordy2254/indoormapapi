@@ -103,7 +103,7 @@ type Entrance struct {
 
 type Room struct {
 	Id         int      `json:"id" gorm:"primaryKey"`
-	BuildingId int      `json:"buildingId"`
+	FloorId int      `json:"floorId"`
 	Rotation   *float64 `json:"rotation"`
 	Name       string   `json:"name"`
 	Location   Point2f  `json:"location" gorm:"embedded;embeddedPrefix:location_"`
