@@ -104,8 +104,8 @@ type Indent struct {
 
 type Entrance struct {
 	Id         int     `json:"id" gorm:"primaryKey"`
-	Start Point2f `json:"dimensions" gorm:"embedded;embeddedPrefix:start_"`
-	End Point2f `json:"dimensions" gorm:"embedded;embeddedPrefix:end_"`
+	Start Point2f `json:"start" gorm:"embedded;embeddedPrefix:start_"`
+	End Point2f `json:"end" gorm:"embedded;embeddedPrefix:end_"`
 }
 
 type Room struct {
