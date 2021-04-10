@@ -35,12 +35,12 @@ func (mapStore *MapStore) DeleteMap(id int){
 }
 
 func (mapStore *MapStore) GetMapsByUserId(id int) []model.Map {
-	var maps []model.Map
-	mapStore.DB.Raw("select maps.* from auth0_users users "+
-		"  join user_map_jt umj on users.id = umj.auth0_user_id "+
-		"   join maps on umj.map_id = maps.id"+
-		" WHERE umj.auth0_user_id=? AND deleted is null", id).Scan(&maps)
-	return maps
+	var auth0User model.Auth0User
+	mapStore.DB.Debug().
+		Preload("Maps").
+		Find(&auth0User, id)
+
+	return auth0User.Maps
 }
 
 func (mapStore *MapStore) GetOAuthUserBySub(sub string) model.Auth0User {
