@@ -89,8 +89,8 @@ type Sensor struct {
 type Indent struct {
 	Id         int     `json:"id" gorm:"primaryKey"`
 	RoomId     int     `json:"roomId"`
-	WallKeyA   string  `json:"wallKeyA" gorm:"column:wallKeyA"`
-	WallKeyB   string  `json:"wallKeyB" gorm:"column:wallKeyB"`
+	WallKeyA   *string  `json:"wallKeyA" gorm:"column:wallKeyA"`
+	WallKeyB   *string  `json:"wallKeyB" gorm:"column:wallKeyB"`
 	Location   float64 `json:"location"`
 	Dimensions Point2f `json:"dimensions" gorm:"embedded;embeddedPrefix:size_"`
 }

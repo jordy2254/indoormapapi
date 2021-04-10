@@ -167,24 +167,24 @@ func cutoutAndMergeEdges(mainEdges []*PairPoint2f, toCut []*PairPoint2f) []*Pair
 }
 
 func calculateStartPointsOfIndent(room Room, indent Indent) (error, *Point2f) {
-	if indent.WallKeyA != "" && indent.WallKeyB != "" {
+	if *indent.WallKeyA != "" && *indent.WallKeyB != "" {
 		var xStart float64 = 0
 		var yStart float64 = 0
 
-		if indent.WallKeyA == "BOTTOM" {
+		if *indent.WallKeyA == "BOTTOM" {
 			yStart = *room.Dimensions.Y - *indent.Dimensions.Y
 		}
 
-		if indent.WallKeyB == "RIGHT" {
+		if *indent.WallKeyB == "RIGHT" {
 			xStart = *room.Dimensions.X - *indent.Dimensions.X
 		}
 
 		return nil, &Point2f{X: &xStart, Y: &yStart}
-	} else if indent.WallKeyA != "" {
+	} else if *indent.WallKeyA != "" {
 		var xStart float64 = 0
 		var yStart float64 = 0
 
-		switch indent.WallKeyA {
+		switch *indent.WallKeyA {
 		case "TOP":
 			xStart = indent.Location
 			yStart = 0
@@ -202,7 +202,7 @@ func calculateStartPointsOfIndent(room Room, indent Indent) (error, *Point2f) {
 			yStart = indent.Location
 			break
 		default:
-			return errors.New("No indent location found for" + indent.WallKeyA), nil
+			return errors.New("No indent location found for" + *indent.WallKeyA), nil
 		}
 
 		return nil, &Point2f{X: &xStart, Y: &yStart}

@@ -26,8 +26,6 @@ func New(db *gorm.DB, logger *logging.Logger) http.Handler {
 	pathStore := store.NewPathStore(db)
 	sensorStore := store.NewSensorStore(db)
 
-
-
 	rh := handlers.NewRouteHelper(router, auth0Middleware)
 
 	handlers.AddMapAPI(rh, &mapStore, logger)
