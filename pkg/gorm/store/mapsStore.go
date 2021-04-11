@@ -36,7 +36,7 @@ func (mapStore *MapStore) DeleteMap(id int){
 
 func (mapStore *MapStore) GetMapsByUserId(id int) []model.Map {
 	var auth0User model.Auth0User
-	mapStore.DB.Debug().
+	mapStore.DB.
 		Preload("Maps").
 		Find(&auth0User, id)
 
