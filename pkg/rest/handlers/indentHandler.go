@@ -19,7 +19,8 @@ type IndentController struct {
 
 func AddIndentAPI(rh *RouteHelper, indentStore *store.IndentStore, logger *logging.Logger) {
 	controller := IndentController{indentStore: indentStore, logger: logger}
-	rh.protectedRoute("/Indents/{id}", controller.getIndent).Methods("GET", "OPTIONS")
+	rh.protectedRoute("/Indents/{id}", controller.getIndent).Methods("GET")
+	rh.protectedRoute("/Indents/{id}", controller.deleteIndent).Methods("DELETE")
 	rh.protectedRoute("/Indents/{id}", controller.updateIndent).Methods("POST")
 	rh.protectedRoute("/Indents", controller.createIndent).Methods("POST")
 }
@@ -57,6 +58,17 @@ func (ic *IndentController) getIndent(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		return
 	}
+	json.NewEncoder(w).Encode(ic.indentStore.GetIndentById(id))
+}
+
+func (ic *IndentController) deleteIndent(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	fmt.Println("Endpoint Hit: getIndent")
+	id, err := strconv.Atoi(params["id"])
+	if err != nil {
+		return
+	}
+	ic.indentStore.DeleteIndent(id)
 	json.NewEncoder(w).Encode(ic.indentStore.GetIndentById(id))
 }
 

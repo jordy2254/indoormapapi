@@ -26,3 +26,7 @@ func (is *IndentStore) GetIndentById(id int) model.Indent {
 func (is *IndentStore) UpdateIndent(indent model.Indent) {
 	is.DB.Model(&indent).UpdateColumns(&indent)
 }
+
+func (is *IndentStore) DeleteIndent(id int) {
+	is.DB.Delete(&model.Indent{}, id)
+}
