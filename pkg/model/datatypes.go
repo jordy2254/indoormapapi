@@ -31,7 +31,7 @@ type MapNode struct {
 	Location   Point2f `json:"location" gorm:"embedded;embeddedPrefix:location_"`
 	RootNode   bool    `json:"rootNode"`
 	FloorIndex *int    `json:"floorIndex"`
-	BiDirectional bool `json:bidirectional`
+	BiDirectional bool `json:"bidirectional"`
 }
 
 type NodeEdge struct {
@@ -53,10 +53,10 @@ type Map struct {
 	Id        int         `json:"id" gorm:"primaryKey"`
 	Password  string      `json:"password"`
 	Name      string      `json:"name"`
-	Buildings []Building  `json:"buildings" gorm:"references:Id"`
+	Buildings []Building  `json:"buildings" gorm:"references:Id;OnDelete:CASCADE"`
 	Users     []Auth0User `json:"-" gorm:"many2many:user_map_jt;"`
-	Nodes     []MapNode   `json:"nodes" gorm:"references:Id"`
-	Edges     []NodeEdge  `json:"edges" gorm:"references:Id"`
+	Nodes     []MapNode   `json:"nodes" gorm:"references:Id;OnDelete:CASCADE"`
+	Edges     []NodeEdge  `json:"edges" gorm:"references:Id;OnDelete:CASCADE"`
 	NorthAngle float64 `json:"northAngle"`
 	Deleted gorm.DeletedAt
 }
@@ -66,7 +66,7 @@ type Building struct {
 	MapId        int     `json:"mapId"`
 	BuildingName string  `json:"buildingName"`
 	Location     Point2f `json:"location" gorm:"embedded;embeddedPrefix:location_"`
-	Floors       []Floor `json:"floors" gorm:"references:Id"`
+	Floors       []Floor `json:"floors" gorm:"references:Id;OnDelete:CASCADE"`
 }
 
 type Floor struct {
@@ -75,8 +75,8 @@ type Floor struct {
 	FloorNumber *int     `json:"floorNumber"`
 	FloorName   string   `json:"floorName"`
 	Location    Point2f  `json:"location" gorm:"embedded;embeddedPrefix:location_"`
-	Rooms       []Room   `json:"rooms" gorm:"references:Id"`
-	Sensors     []Sensor `json:"sensors"`
+	Rooms       []Room   `json:"rooms" gorm:"references:Id;OnDelete:CASCADE"`
+	Sensors     []Sensor `json:"sensors"gorm:"OnDelete:CASCADE"`
 }
 
 type Sensor struct {
@@ -108,10 +108,10 @@ type Room struct {
 	Name       string   `json:"name"`
 	Location   Point2f  `json:"location" gorm:"embedded;embeddedPrefix:location_"`
 	Dimensions Point2f  `json:"dimensions" gorm:"embedded;embeddedPrefix:size_"`
-	Indents    []Indent `json:"indents" gorm:"references:Id"`
+	Indents    []Indent `json:"indents" gorm:"references:Id;OnDelete:CASCADE"`
 	Polygon    []Point2f `json:"polygon" gorm:"-"`
 	Walls      []*PairPoint2f `json:"walls" gorm:"-"`
-	Entrances  []Entrance `json:"entrances" gorm:"references:Id;many2many:room_entrance_jt;"`
+	Entrances  []Entrance `json:"entrances" gorm:"references:Id;many2many:room_entrance_jt;OnDelete:CASCADE"`
 }
 
 func (r *Room) AfterFind(tx *gorm.DB) (err error) {
