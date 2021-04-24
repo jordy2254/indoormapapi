@@ -15,7 +15,7 @@ func NewRouteLogger(logger *logging.Logger) *RouteLogMiddleware{
 
 func (m *RouteLogMiddleware) Handler(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		m.logger.Infof("Endpoint hit %s", r.RequestURI)
+		m.logger.Infof("Endpoint hit %s, %s", r.RequestURI, r.Method)
 		h.ServeHTTP(w, r)
 	})
 }
