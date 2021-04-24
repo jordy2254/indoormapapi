@@ -2,6 +2,7 @@ package model
 
 import (
 	"errors"
+	"github.com/jordy2254/indoormaprestapi/pkg/stringutils"
 )
 
 func removePoint(array []*PairPoint2f, point *PairPoint2f) []*PairPoint2f {
@@ -167,7 +168,7 @@ func cutoutAndMergeEdges(mainEdges []*PairPoint2f, toCut []*PairPoint2f) []*Pair
 }
 
 func calculateStartPointsOfIndent(room Room, indent Indent) (error, *Point2f) {
-	if *indent.WallKeyA != "" && *indent.WallKeyB != "" {
+	if !stringutils.IsNilPtrOrEmpty(indent.WallKeyA) && !stringutils.IsNilPtrOrEmpty(indent.WallKeyB) {
 		var xStart float64 = 0
 		var yStart float64 = 0
 
@@ -180,7 +181,7 @@ func calculateStartPointsOfIndent(room Room, indent Indent) (error, *Point2f) {
 		}
 
 		return nil, &Point2f{X: &xStart, Y: &yStart}
-	} else if *indent.WallKeyA != "" {
+	} else if !stringutils.IsNilPtrOrEmpty(indent.WallKeyA) {
 		var xStart float64 = 0
 		var yStart float64 = 0
 
