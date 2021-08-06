@@ -1,18 +1,99 @@
 package main
 
 import (
+	"encoding/json"
 	"github.com/jordy2254/indoormaprestapi/pkg/gorm"
 	"github.com/jordy2254/indoormaprestapi/pkg/gorm/store"
 	"github.com/jordy2254/indoormaprestapi/pkg/model"
 	"github.com/tfriedel6/canvas"
 	"github.com/tfriedel6/canvas/sdlcanvas"
+	"os"
+)
+var(
+	 TOP = "TOP"
+	 BOTTOM = "BOTTOM"
+	 LEFT = "LEFT"
+	 RIGHT = "RIGHT"
+)
+var (
+
+	testData model.Room = model.Room{
+		Location:   model.NewPoint2f(0,0),
+		Dimensions: model.NewPoint2f(100,100),
+
+		Indents: []model.Indent{
+			{
+				WallKeyA:   &TOP,
+				WallKeyB:   &LEFT,
+				Dimensions: model.NewPoint2f(10,10),
+			},
+			{
+				WallKeyA:   &TOP,
+				WallKeyB:   &RIGHT,
+				Dimensions: model.NewPoint2f(10,10),
+			},
+			{
+				WallKeyA:   &BOTTOM,
+				WallKeyB:   &LEFT,
+				Dimensions: model.NewPoint2f(10,10),
+			},
+			{
+				WallKeyA:   &BOTTOM,
+				WallKeyB:   &RIGHT,
+				Dimensions: model.NewPoint2f(10,10),
+			},
+			{
+				WallKeyA:   &BOTTOM,
+				Location: 25,
+				Dimensions: model.NewPoint2f(10,10),
+			},
+			{
+				WallKeyA:   &TOP,
+				Location: 25,
+				Dimensions: model.NewPoint2f(10,10),
+			},
+			{
+				WallKeyA:   &LEFT,
+				Location: 25,
+				Dimensions: model.NewPoint2f(10,10),
+			},
+			{
+				WallKeyA:   &RIGHT,
+				Location: 25,
+				Dimensions: model.NewPoint2f(10,10),
+			},
+		},
+		Polygon:    nil,
+		Walls:      nil,
+
+	}
 )
 
 func main() {
 	gormConnectionString := "admin:welcome@tcp(localhost:3306)/project?charset=utf8mb4&parseTime=True&loc=Local"
 	dbConnection := gorm.Connect(gormConnectionString)
+
+	rs := store.NewRoomStore(dbConnection)
+	r := rs.GetRoomById(3)
+	_ = r
+
 	ms := store.NewMapStore(dbConnection)
 	m := ms.GetMapById(1)
+	_ = ms
+	_ = m
+
+	testData.Walls = model.CalculatePolygonEdgePairs(testData, false)
+	testData.Polygon = model.CalculatePolygonPoints(testData)
+	json.NewEncoder(os.Stdout).Encode(testData.Polygon)
+	m2 := model.Map{
+		Buildings: []model.Building{{
+			Floors: []model.Floor{{
+				Rooms: []model.Room{testData},
+			}},
+		}},
+	}
+
+	_ = m2
 
 	mapRenderer(m)
 }
@@ -89,6 +170,7 @@ func mapRenderer(m model.Map) {
 
 		for _, building := range m.Buildings {
 			for _, room := range building.Floors[0].Rooms {
+
 				offset := model.Point2f{
 					X: ptrFromVar(*offs.X + *room.Location.X),
 					Y: ptrFromVar(*offs.Y + *room.Location.Y),

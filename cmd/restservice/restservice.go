@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"github.com/jordy2254/indoormaprestapi/pkg/gorm"
 	"github.com/jordy2254/indoormaprestapi/pkg/rest"
 	"github.com/jordy2254/indoormaprestapi/pkg/rest/wrappers"
@@ -24,9 +25,11 @@ func main() {
 
 	restService := rest.New(dbConnection, logger)
 
-	listedAdd := "192.168.0.28:3500"
+	logger.Infof("Rest Service started on %s", os.Getenv("PORT"))
 
-	logger.Infof("Rest Service started on %s", listedAdd)
+	error := http.ListenAndServe(os.Getenv("PORT"), wrappers.NewCorsWrapper().Handler(restService))
 
-	http.ListenAndServe(listedAdd, wrappers.NewCorsWrapper().Handler(restService))
+	if(error != nil){
+		fmt.Println(error)
+	}
 }
